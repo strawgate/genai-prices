@@ -32,12 +32,19 @@ safe-outputs:
     expires: 30d
 timeout-minutes: 20
 max-turns: 120
-# Disable gh-aw's AI-credits guardrail: the Fireworks minimax model isn't in gh-aw's
-# pricing catalog, so with the guardrail active the api-proxy rejects it (HTTP 400
-# unknown_model_ai_credits). -1 makes the firewall drop maxAiCredits. Requires the
-# compiler pinned to v0.82.2 (firewall 0.27.22); see AGENTIC_PRICE_CHECK.md.
-max-ai-credits: -1
-max-daily-ai-credits: -1
+# Price the Fireworks minimax model so gh-aw's AI-credits guardrail can meter it
+# instead of rejecting it (HTTP 400 unknown_model_ai_credits). Per-token USD, docs:
+# reference/faq.md "custom model pricing".
+models:
+  providers:
+    anthropic:
+      models:
+        accounts/fireworks/models/minimax-m3:
+          cost:
+            input: '3e-07'
+            output: '1.5e-06'
+            cache_read: '3e-08'
+            cache_write: '3.75e-07'
 engine:
   id: claude
   # Claude Code pointed at Fireworks's Anthropic-compatible endpoint, matching
